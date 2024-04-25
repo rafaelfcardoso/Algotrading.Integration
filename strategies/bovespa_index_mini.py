@@ -5,7 +5,7 @@ class CandleStick:
         self.low = low_price
         self.close = close_price
 
-class TradeBot:
+class MiniIndiceBovespa:
     def __init__(self):
         self.candles = []
         self.current_trade = None
@@ -42,22 +42,22 @@ class TradeBot:
             print("Stop loss reached. Closing trade.")
             self.close_trade()
 
-# Example usage
-bot = TradeBot()
+# # Example usage
+# bot = MiniIndiceBovespa()
 
-# Add candles
-bot.add_candle(CandleStick(100, 110, 90, 105))
-bot.add_candle(CandleStick(105, 115, 100, 110))
-bot.add_candle(CandleStick(110, 120, 105, 115))
+# # Add candles
+# bot.add_candle(CandleStick(100, 110, 90, 105))
+# bot.add_candle(CandleStick(105, 115, 100, 110))
+# bot.add_candle(CandleStick(110, 120, 105, 115))
 
-# Get previous candles
-previous_candles = bot.get_previous_candles(2)
-for candle in previous_candles:
-    bot.identify_candle_properties(candle)
+# # Get previous candles
+# previous_candles = bot.get_previous_candles(2)
+# for candle in previous_candles:
+#     bot.identify_candle_properties(candle)
 
-# Open a trade
-bot.open_trade(110, take_profit=10, stop_loss=5)
+# # Open a trade
+# bot.open_trade(110, take_profit=10, stop_loss=5)
 
-# Check take profit and stop loss
-bot.check_take_profit(120)  # Trade should close
-bot.check_stop_loss(105)   # Trade already closed, no effect
+# # Check take profit and stop loss
+# bot.check_take_profit(120)  # Trade should close
+# bot.check_stop_loss(105)   # Trade already closed, no effect
