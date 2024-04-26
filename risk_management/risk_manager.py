@@ -15,11 +15,21 @@ class RiskManagement():
         """
 
         if not mt5.initialize():
-          print("initialize() failed, error code =",mt5.last_error())
-          quit()
+            print("initialize() failed, error code =",mt5.last_error())
+            quit()
 
-        positions = mt5.positions_get()
-        if positions is not None:
-            positions_data = pd.DataFrame(list(positions), columns=positions[0]._asdict().keys())
+        try:
+            positions = mt5.positions_get()
+            print("Positions found:", len(positions), positions)
+            if len(positions) is not 0:
+                positions_data = pd.DataFrame(list(positions), columns=positions[0]._asdict().keys())
+
+            else:
+                print("No positions found.")
+                positions_data = None
+
             return positions_data
-        return None
+        
+        except Exception as e:
+            print(f"Error retrieving positions: {str(e)}")
+            return None

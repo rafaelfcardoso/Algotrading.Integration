@@ -23,12 +23,20 @@ def main():
     print(real_time)
 
     #test_execution = MetaTraderExecutionHandler.place_market_order("WINM24", mt5.TRADE_ACTION_DEAL, 1.0, mt5.ORDER_TYPE_BUY)
-    #buy_order_market = metatrader.place_market_order("WINM24", 1.0)
+    buy_order_market = metatrader.place_market_order("WINM24", 1.0)
 
     position = risk_manager.get_positions()
-    close_position = metatrader.close_position(position['ticket'][0])
+    
+    #print("symbol:", position['symbol'][0])
 
-    print(position)
+    if position is not None:
+        print("Position found. {} lots of {}".format(position['volume'][0], position['symbol'][0]))
+
+        close_position = metatrader.close_position(
+            position.loc[0, 'ticket'].astype(int),
+            position.loc[0, 'symbol'],
+            position.loc[0, 'volume'].astype(float)
+        )
     #realtime_price = data_provider.get_realtime_data('AAPL')
     # data_provider = DataProvider()
     # execution_handler = ExecutionHandler(broker_api)

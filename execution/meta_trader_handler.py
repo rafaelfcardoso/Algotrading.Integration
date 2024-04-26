@@ -83,12 +83,13 @@ class MetaTraderExecutionHandler:
 
         return result.order
     
-    def close_position(self, position_id):
+    def close_position(self, position_id, symbol, volume:float):
         """
         Closes an open position in the MetaTrader 5 terminal.
 
         Args:
             position_id (int): The position ticket number.
+            volume (float): The volume of the order (e.g., 1 lot of a future mini-contract)
 
         Returns:
             bool: True if the position was closed successfully, False otherwise.
@@ -100,25 +101,47 @@ class MetaTraderExecutionHandler:
                 print("Error: Not connected to MetaTrader 5 terminal.")
                 return False
             
-        price=mt5.symbol_info_tick(symbol).bid
+        price=mt5.symbol_info_tick(symbol)
         deviation=20
-        request={
-            "action": mt5.TRADE_ACTION_DEAL,
-            "symbol": symbol,
-            "volume": lot,
-            "type": mt5.ORDER_TYPE_SELL,
-            "position": position_id,
-            "price": price,
-            "deviation": deviation,
-            "magic": 234000,
-            "comment": "python script close",
-            "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_RETURN,
-        }
+
+        if volume > 0.0:
+            request={
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": volume,
+                "type": mt5.ORDER_TYPE_SELL,
+                "position": position_id,
+                "price": price,
+                "deviation": deviation,
+                "magic": 234000,
+                "comment": "python script close",
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_RETURN,
+            }
+
+        elif volume < 0.0:
+            request={
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": -volume,
+                "type": mt5.ORDER_TYPE_BUY,
+                "position": position_id,
+                "price": price,
+                "deviation": deviation,
+                "magic": 234000,
+                "comment": "python script close",
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_RETURN,
+            }
+        
         # enviamos a solicitação de negociação
-        result=mt5.order_send(request)
+        result = mt5.order_send(request)
+        print("result:", result)
         # verificamos o resultado da execução
-        print("3. close position #{}: sell {} {} lots at {} with deviation={} points".format(position_id,symbol,lot,price,deviation));
+        if volume > 0.0:
+            print("3. close position #{}: sell {} {} lots at {} with deviation={} points".format(position_id,symbol,volume,price,deviation))
+        elif volume < 0.0:
+            print("3. close position #{}: buy {} {} lots at {} with deviation={} points".format(position_id,symbol,-volume,price,deviation))
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print("4. order_send failed, retcode={}".format(result.retcode))
             print("   result",result)
