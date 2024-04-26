@@ -20,7 +20,8 @@ class RiskManagement():
 
         try:
             positions = mt5.positions_get()
-            print("Positions found:", len(positions), positions)
+            #print("Posicao de {} lotes de {} encontrada.".format(positions['volume'][0], positions['symbol'][0]))
+            #print("Posicao de {} lotes de {} encontrada. Resultado atual de {}".format(positions['volume'][0], positions['symbol'][0], positions['profit'][0]))
             if len(positions) is not 0:
                 positions_data = pd.DataFrame(list(positions), columns=positions[0]._asdict().keys())
 
