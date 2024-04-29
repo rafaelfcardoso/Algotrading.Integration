@@ -1,5 +1,5 @@
 import MetaTrader5 as mt5
-from data.data_providers import data_provider_factory
+from data_source.data_providers import data_provider_factory
 from execution.execution_handler import ExecutionHandler
 from execution.meta_trader_handler import MetaTraderExecutionHandler
 from risk_management.risk_manager import RiskManagement
