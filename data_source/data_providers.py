@@ -119,13 +119,17 @@ class MetaTraderDataProvider(DataProviderBase):
         Returns:
             pd.DataFrame: A DataFrame containing the historical price data.
         """
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+
         if not self.connected:
             try:
                 self.connect()
             except Exception as e:
                 print("Error: Not connected to MetaTrader 5 terminal.")
-            return None
+                return None
 
+        # create 'datetime' objects in UTC time zone to avoid the implementation of a local time zone offset
         try:
             data = mt5.copy_rates_range(symbol, interval, datetime.strptime(start_date, "%Y-%m-%d"),
                                         datetime.strptime(end_date, "%Y-%m-%d"))
@@ -180,7 +184,7 @@ class MetaTraderDataProvider(DataProviderBase):
 def data_provider_factory(provider_name, api_key=None):
     if provider_name == 'yahoo':
         return YahooFinanceDataProvider()
-    elif provider_name == 'meta_trader':
+    elif provider_name == 'metatrader':
         return MetaTraderDataProvider()
     else:
         raise ValueError(f"Unsupported data provider: {provider_name}")
