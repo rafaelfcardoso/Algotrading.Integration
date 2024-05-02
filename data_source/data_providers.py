@@ -141,20 +141,36 @@ class MetaTraderDataProvider(DataProviderBase):
             print(f"Error retrieving historical data for {symbol}: {str(e)}")
             return None
 
-    def get_ohlc(self, symbol, timeframe, n=5):
+    def get_previous_candles(self, symbol, timeframe, count=5):
+        """
+                Fetches OHLC data for the previous N last candles.
+
+                Args:
+                    symbol (str): The ticker symbol of the instrument.
+                    timeframe (int): The timeframe to retrieve data for (e.g., mt5.TIMEFRAME_M15 for 15-minute bars).
+                    count (int) : The number of candles to retrieve.
+
+                Returns
+                    pandas.DataFrame: A DataFrame containing the OHLC data.
+                """
+
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', 2500)
         if not self.connected:
             try:
                 self.connect()
             except Exception as e:
-                print("Error: Not connected to MetaTrader 5 terminal.")
+                print("Erro: Falha ao conectar ao terminal MetaTrader 5.")
                 return None
 
-        rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, n)
-        df = pd.DataFrame(rates)
-        df['time'] = pd.to_datetime(df['time'], unit='s')
-        df.set_index('time', inplace=True)
+        rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, count)
+        if rates is None:
+            print("Erro: Não foi possível obter dados OHLC.")
+            return None
+        else:
+            df = pd.DataFrame(rates)
+            df['time'] = pd.to_datetime(df['time'], unit='s')
+            df.set_index('time', inplace=True)
 
         return df
 

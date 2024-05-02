@@ -19,16 +19,18 @@ def main():
     risk_manager = RiskManagement()
 
     # initialize = data_provider.connect()
-    ohlc_data = data_provider.get_ohlc('WINM24', mt5.TIMEFRAME_M1, n=3)
-    real_time = data_provider.get_realtime_data('WINM24')
-    print(real_time)
+    # ohlc_data = data_provider.get_previous_candles('WINM24', mt5.TIMEFRAME_M1, count=3)
+    # print(ohlc_data)
+    #
+    # real_time_price = data_provider.get_realtime_data('WINM24')
+    # print(real_time_price)
 
     # buy_order_market = metatrader.market_buy_order("WINM24", 1.0)
-    sell_order_market = metatrader.market_sell_order("WINM24", 1.0)
+    # sell_order_market = metatrader.market_sell_order("WINM24", 1.0)
 
     position = risk_manager.get_positions()
-
-    # print("symbol:", position['symbol'][0])
+    # if position is not None:
+    #     print("Posicao encontrada. {} lotes de {}.".format(position['volume'][0], position['symbol'][0]))
 
     if position is not None:
         print("Posicao encontrada. {} lotes de {}.".format(position['volume'][0], position['symbol'][0]))
@@ -39,11 +41,8 @@ def main():
             position.loc[0, 'volume'].astype(float)
         )
 
-    # realtime_price = data_provider.get_realtime_data('AAPL')
-    # data_provider = DataProvider()
-    # execution_handler = ExecutionHandler(broker_api)
     # strategy = MiniIndiceBovespa(data_provider, execution_handler)
-
+    #
     # # Run the strategy
     # strategy.run()
 

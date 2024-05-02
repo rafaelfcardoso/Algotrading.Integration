@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 import time
 
+
 class MetaTraderExecutionHandler:
     def __init__(self):
         self.connected = False
@@ -28,6 +29,34 @@ class MetaTraderExecutionHandler:
             mt5.shutdown()
             self.connected = False
 
+    def check_take_profit(self, position_id, symbol, take_profit_price, volume):
+        """
+        Checks if the current price has reached the desired take profit price. If so, closes the operation.
+
+        Args:
+            position_id (int): The position ticket number.
+            symbol (str): The ticker symbol of the instrument.
+            take_profit_price (float): The desired take profit price.
+            volume (float): The volume of the order (e.g., 1 lot of a future mini-contract)
+
+        Returns:
+            bool: True if the position was closed successfully due to hitting the take profit, False otherwise.
+        """
+        if not self.connected:
+            try:
+                self.connect()
+            except Exception as e:
+                print("Erro: Falha ao conectar ao terminal MetaTrader 5.")
+                return False
+
+        current_price = mt5.symbol_info_tick(symbol).last
+
+        if (volume > 0 and current_price >= take_profit_price) or (volume < 0 and current_price <= take_profit_price):
+            print(f"Preço de Take Profit alcançado para {symbol}.")
+            return self.close_position(position_id, symbol, volume)
+
+        return False
+
     def market_buy_order(self, symbol, volume, deviation=20):
         """
         Places an order in the MetaTrader 5 terminal.
@@ -46,7 +75,7 @@ class MetaTraderExecutionHandler:
             try:
                 self.connect()
             except Exception as e:
-                print("Error: Not connected to MetaTrader 5 terminal.")
+                print("Erro: Falha ao conectar ao terminal MetaTrader 5.")
                 return None
         
         point = mt5.symbol_info(symbol).point
@@ -101,7 +130,7 @@ class MetaTraderExecutionHandler:
             try:
                 self.connect()
             except Exception as e:
-                print("Error: Not connected to MetaTrader 5 terminal.")
+                print("Erro: Falha ao conectar ao terminal MetaTrader 5.")
                 return None
         
         point = mt5.symbol_info(symbol).point
@@ -137,14 +166,14 @@ class MetaTraderExecutionHandler:
             return None
         
         return True
-        
     
-    def close_position(self, position_id, symbol, volume:float):
+    def close_position(self, position_id, symbol, volume: float):
         """
         Closes an open position in the MetaTrader 5 terminal.
 
         Args:
             position_id (int): The position ticket number.
+            symbol (str): The ticker symbol of the instrument.
             volume (float): The volume of the order (e.g., 1 lot of a future mini-contract)
 
         Returns:
@@ -154,26 +183,27 @@ class MetaTraderExecutionHandler:
             try:
                 self.connect()
             except Exception as e:
-                print("Error: Not connected to MetaTrader 5 terminal.")
+                print("Erro: Falha ao conectar ao terminal MetaTrader 5.")
                 return False
             
-        price=mt5.symbol_info_tick(symbol).bid
-        deviation=20
+        price = mt5.symbol_info_tick(symbol).bid
+        deviation = 20
+        position_closed = False
 
         if volume > 0.0:
-            print("Fechando posicao #{}: venda de {} lotes de {} no preco {}".format(position_id,volume,symbol,price,deviation))
+            print("Fechando posicao #{}: venda de {} lotes de {} no preco {}".format(
+                position_id, volume, symbol, price, deviation))
             position_closed = self.market_sell_order(symbol, volume)
 
         elif volume < 0.0:
-            print("Fechando posicao #{}: compra de {} lotes de {} no preco {}".format(position_id,volume,symbol,price,deviation))
+            print("Fechando posicao #{}: compra de {} lotes de {} no preco {}".format(
+                position_id, volume, symbol, price, deviation))
             position_closed = self.market_buy_order(symbol, volume)
 
-        if position_closed is None:
+        if position_closed is False:
             print("Erro ao fechar posicao #{}".format(position_id))
             return False
         
         elif position_closed is True:
             print("Posicao #{} fechada com sucesso.".format(position_id))
             return True
-
-#place_market_order("WINM24", mt5.TRADE_ACTION_DEAL, 1.0, mt5.ORDER_TYPE_BUY)
