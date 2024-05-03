@@ -1,4 +1,5 @@
 import pandas as pd
+from pytz import timezone
 import yfinance as yf
 import MetaTrader5 as mt5
 
@@ -106,6 +107,45 @@ class MetaTraderDataProvider(DataProviderBase):
             mt5.shutdown()
             self.connected = False
 
+    def get_ticks_from_start(self, symbol: str, start_date: str, end_date: str, flags=mt5.COPY_TICKS_ALL):
+        """
+        Retrieves ticks for a given symbol and date range.
+
+        Args:
+            symbol (str): The ticker symbol of the instrument.
+            start_date (str): The start date of the data (YYYY-MM-DD).
+            end_date (str): The end date of the data (YYYY-MM-DD).
+            flags (int): Type of requested data (mt5.COPY_TICKS_ALL, mt5.COPY_TICKS_INFO).
+
+        Returns:
+            Array of CopyTicks* structures or None in case of failure.
+        """
+        if not mt5.terminal_info():
+            print("Terminal is not connected, trying to connect...")
+            try:
+                self.connect()
+            except Exception as e:
+                print("Error: Not connected")
+                return None
+
+        ticks = mt5.copy_ticks_range(symbol, start_date, end_date, flags)
+
+        if ticks is None:
+            print('No ticks obtained')
+            return ticks
+        else:
+            print('Ticks obtained', len(ticks))
+
+        # create DataFrame out of the obtained data
+        ticks_frame = pd.DataFrame(ticks)
+        # convert time in seconds into the datetime format
+        ticks_frame['time'] = pd.to_datetime(ticks_frame['time'], unit='s')
+
+        # display data
+        print("\nDisplay dataframe with ticks")
+        print(ticks_frame.head(10))
+        return ticks_frame
+
     def get_historical_data(self, symbol, start_date, end_date, interval=mt5.TIMEFRAME_M1):
         """
         Retrieves historical price data for a given symbol and date range.
@@ -191,7 +231,7 @@ class MetaTraderDataProvider(DataProviderBase):
         try:
             rates = mt5.symbol_info_tick(symbol)
             # print(f"{symbol} - last: {rates.last}, bid: {rates.bid}, ask: {rates.ask}")
-            return rates.bid
+            return rates
         except Exception as e:
             print(f"Error retrieving real-time data for {symbol}: {str(e)}")
             return None

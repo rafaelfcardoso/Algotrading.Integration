@@ -19,8 +19,8 @@ def run_backtesting():
 
     # Prepare historical data
     symbol = 'WINM24'  # Bovespa Mini Index Futures symbol - '^BVSP' from Yahoo or 'WINM24' from metatrader
-    start_date = '2024-04-01'
-    end_date = '2024-04-30'
+    start_date = '2024-05-03'
+    end_date = '2024-05-04'
 
     historical_data = data_provider.get_historical_data(symbol, start_date, end_date)
     print(historical_data.head())
@@ -30,22 +30,17 @@ def run_backtesting():
                                      lot_size=1.0)
 
     # Create an instance of the MeanReversionBacktester
-    backtester = Backtester(strategy, lot_size=1.0)
+    backtester = Backtester(strategy, lot_size=1.0, stop_loss=100)
 
     # Run the backtesting simulation
-
-
-
-
-
-    # lookback_period = 20
-    # backtest_results = backtester.run(historical_data)
+    lookback_period = 20
+    backtest_results = backtester.run(historical_data)
 
     # Analyze the backtesting results
-    # print(backtest_results[1])
+    print(backtest_results[1])
 
     # Perform further analysis, visualization, and evaluation of the results
-    # backtest_results[0].to_csv(f"resultado_{symbol}_inicio_{start_date}_fim_{end_date}.csv", index=True)
+    backtest_results[0].to_csv(f"resultado_{symbol}_inicio_{start_date}_fim_{end_date}.csv", index=True)
 
 
 if __name__ == '__main__':

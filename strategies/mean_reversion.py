@@ -24,7 +24,7 @@ class BaseTradingStrategy:
     def calculate_exit(self, signal, close_price, entry_price):
         raise NotImplementedError("Method `calculate_exit()` must be implemented in the child strategy class")
 
-class MeanReversionStrategy:
+class MeanReversionStrategy():
     def __init__(self, symbol, lookback_period, entry_threshold, exit_threshold, lot_size, poll_interval=None):
         self.poll_interval = poll_interval
         self.symbol = symbol
@@ -43,17 +43,22 @@ class MeanReversionStrategy:
         z_score = calculate_z_score(data[close_label])
         if z_score < -self.entry_threshold and self.position != 'LONG':
             self.position = 'LONG'
+            print(f"{data.index[-1]} Sinal de compra acionado.")
             return 'BUY'
         elif z_score > self.entry_threshold and self.position != 'SHORT':
             self.position = 'SHORT'
+            print(f"{data.index[-1]} Sinal de venda acionado.")
             return 'SELL'
         elif self.position == 'LONG' and z_score > -self.exit_threshold:
             self.position = None
+            print(f"{data.index[-1]} Sinal de fechamento acionado!")
             return 'CLOSE'
         elif self.position == 'SHORT' and z_score < self.exit_threshold:
             self.position = None
+            print(f"{data.index[-1]} Sinal de fechamento acionado!")
             return 'CLOSE'
         else:
+            print(f"{data.index[-1]} Nenhum sinal acionado. Posicao atual: {self.position}")
             return None
 
     def execute_signal(self, signal, execution_handler):

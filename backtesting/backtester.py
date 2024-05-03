@@ -2,9 +2,10 @@ import pandas as pd
 
 
 class Backtester:
-    def __init__(self, strategy, lot_size):
+    def __init__(self, strategy, lot_size, stop_loss):
         self.strategy = strategy
         self.lot_size = lot_size
+        self.stop_loss = stop_loss
 
     def calculate_profit(self, entry_price, exit_price, position):
         return position * (exit_price - entry_price) * self.lot_size
@@ -37,6 +38,7 @@ class Backtester:
                 elif signal == 'CLOSE' and self.strategy.position is None:
                     profit = self.calculate_profit(entry_price, close_price,
                                                    1 if self.strategy.position == 'LONG' else -1)
+                    print(f"Resultado da ultima operacao foi {profit}")
                     profits[i] = profit  # Update profits at the current index
                     total_profit += profit
 
@@ -45,11 +47,12 @@ class Backtester:
 
             positions.append(self.strategy.position)
 
-        if self.strategy.position is not None:
-            close_price = data['Close'][-1]
-            profit = self.calculate_profit(entry_price, close_price, 1 if self.strategy.position == 'LONG' else -1)
-            profits[-1] = profit  # Update profits at the last index
-            total_profit += profit
+            if self.strategy.position is not None and abs(entry_price - close_price) >= self.stop_loss:
+                # close_price = data['Close'][-1]
+                profit = self.calculate_profit(entry_price, close_price, 1 if self.strategy.position == 'LONG' else -1)
+                profits[i] = profit  # Update profits at the last index
+                total_profit += profit
+                signal = 'CLOSE'
 
         result_df = pd.DataFrame({
             'Sinal': signals,
