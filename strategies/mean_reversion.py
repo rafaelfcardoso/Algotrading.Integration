@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import pandas as pd
 
@@ -23,7 +25,8 @@ class BaseTradingStrategy:
         raise NotImplementedError("Method `calculate_exit()` must be implemented in the child strategy class")
 
 class MeanReversionStrategy:
-    def __init__(self, symbol, lookback_period, entry_threshold, exit_threshold, lot_size):
+    def __init__(self, symbol, lookback_period, entry_threshold, exit_threshold, lot_size, poll_interval=None):
+        self.poll_interval = poll_interval
         self.symbol = symbol
         self.lookback_period = lookback_period
         self.entry_threshold = entry_threshold
@@ -35,7 +38,7 @@ class MeanReversionStrategy:
         if 'Close' in data.columns or 'close' in data.columns:
             close_label = 'Close' if 'Close' in data.columns else 'close'
         else:
-            raise KeyError("DataFrame does not contain column 'Close' or 'close'")
+            raise KeyError("DataFrame nao contem uma coluna 'Close' ou 'close' como referencia ao preço de fechamento")
 
         z_score = calculate_z_score(data[close_label])
         if z_score < -self.entry_threshold and self.position != 'LONG':
@@ -65,5 +68,5 @@ class MeanReversionStrategy:
                 elif self.position == 'SHORT':
                     execution_handler.close_position(self.position, self.symbol, self.lot_size)
         except Exception as e:
-            print(f"Error executing signal: {e}")
+            print(f"Erro ao executar o sinal: {e}")
 
